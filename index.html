@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <title>TaskTaskTask</title>
+    <!-- Compiled and minified CSS from Materialize -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+     <!-- Compiled and minified JavaScript from Materialize -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+      html {
+        min-height: 100%;
+        width: 100%;
+        background-image: url("https://live.staticflickr.com/3103/2574427997_3b4320754f_b.jpg");
+        background-size: cover;
+        background-attachment: fixed;
+      }
+      
+      body {
+        min-height: 100vh;
+        width: 100%;
+        background: rgba(255, 255, 255, .5);
+        background-attachment: fixed;
+      }
+
+      header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 10;
+      }
+
+      nav {
+        padding: 0 20px;
+      }
+
+      .below-header-wrapper {
+        padding-top: 80px;
+        min-height: 100vh;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .trello-dupe-container {
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .trello-dupe-card {
+        width: 20%;
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #d1c4e9;
+      }
+
+      .trello-dupe-container .trello-dupe-card .collection-header {
+        border-bottom: 1px solid #d1c4e9;
+      }
+
+      .drag-event-container {
+        height: 100%;
+      }
+
+      .task-column-header {
+        margin-bottom: 10px;
+      }
+
+      .item-container:not(#DONE-container) .task {
+        display: grid;
+        grid-template-columns: auto 73px;
+      }
+
+      #DONE-container .task {
+        display: grid;
+        grid-template-columns: auto 130px;
+      }
+
+      .actions {
+        display: flex;
+      }
+
+      .header-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .pointer {
+        cursor: pointer;
+      }
+
+      .collection.with-header .collection-item {
+        padding-left: 20px;
+        padding-right: 10px;
+      }
+
+      span.badge.status-change-days, span.badge.archive {
+        margin-left: 4px;
+      }
+
+      .task-loading {
+        display: flex;
+        justify-content: center;
+      }
+
+      .task-footer {
+        background: rgba(200, 200, 200, 0.7);
+        padding-left: 40px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="deep-purple darken-3">
+        <div class="nav-wrapper">
+          <a href="#" class="brand-logo">TaskTaskTask</a>
+        </div>
+      </nav>
+    </header>
+
+    <div class="below-header-wrapper">
+      <section class="task-loading">
+        <div class="preloader-wrapper big active">
+          <div class="spinner-layer spinner-blue-only">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <main class="trello-dupe-container hide">
+        <ul id="TODO-card" class="trello-dupe-card collection with-header">
+          <li class="collection-header">
+            <div class="header-main"><h4 class="task-column-header">ToDo</h4></div>
+            <div class="input-field">
+              <input id="TODO-input" placeholder="Add a new task" type="text" class="validate new-task-input">
+              <label for="TODO-input">New task</label>
+            </div>
+          </li>
+          <div id="TODO-container" class="item-container drag-event-container"></div>
+        </ul>
+
+        <ul id="UP_NEXT-card" class="trello-dupe-card collection with-header">
+          <li class="collection-header">
+            <div class="header-main"><h4 class="task-column-header">Up Next</h4></div>
+            <div class="input-field">
+              <input id="UP_NEXT-input" placeholder="Add a new task" type="text" class="validate new-task-input">
+              <label for="UP_NEXT-input">New task</label>
+            </div>
+          </li>
+          <div id="UP_NEXT-container" class="item-container drag-event-container"></div>
+        </ul>
+
+        <ul id="IN_PROGRESS-card" class="trello-dupe-card collection with-header">
+          <li class="collection-header">
+            <div class="header-main"><h4 class="task-column-header">In Progress</h4></div>
+            <div class="input-field">
+              <input id="IN_PROGRESS-input" placeholder="Add a new task" type="text" class="validate new-task-input">
+              <label for="IN_PROGRESS-input">New task</label>
+            </div>
+          </li>
+          <div id="IN_PROGRESS-container" class="item-container drag-event-container"></div>
+        </ul>
+
+        <ul id="DONE-card" class="trello-dupe-card collection with-header">
+          <li class="collection-header">
+            <div class="header-main">
+              <h4 class="task-column-header">Done</h4>
+              <span id="archive-all" class="pointer new badge red" data-badge-caption="Archive all"></span>
+            </div>
+            <div class="input-field">
+              <input id="DONE-input" placeholder="Add a new task" type="text" class="validate new-task-input">
+              <label for="DONE-input">New task</label>
+            </div>
+          </li>
+          <div id="DONE-container" class="item-container drag-event-container"></div>
+        </ul>
+      </main>
+
+      <footer class="task-footer">
+          <p class="attribution">"<a target="_blank" rel="noopener noreferrer" href="https://www.flickr.com/photos/14821912@N00/2574427997">grass motion blur wallpaper</a>" by <a target="_blank" rel="noopener noreferrer" href="https://www.flickr.com/photos/14821912@N00">.robbie</a> is licensed under <a target="_blank" rel="noopener noreferrer" href="https://creativecommons.org/licenses/by-nc/2.0/?ref=openverse">CC BY-NC 2.0 <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" style="height: 1em; margin-right: 0.125em; display: inline;"></img><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" style="height: 1em; margin-right: 0.125em; display: inline;"></img><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" style="height: 1em; margin-right: 0.125em; display: inline;"></img></a>. </p>
+      </footer>
+    </div>
+    <!-- jsDelivr :: Sortable :: Latest (https://www.jsdelivr.com/package/npm/sortablejs) -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <script>
+      const HTTP = 'http://';
+      const HTTP_URL_BEGINNINGS = [HTTP, 'https://'];
+      const OTHER_URL_BEGINNINGS = [];
+
+      /** Common functions **/
+      function createTaskElement(task) {
+        const element = document.createElement('li');
+        element.dataset.id = task.id;
+        element.dataset.status = task.status;
+        element.classList.add("collection-item", "draggable-item", "task");
+        const titleHTML = getTitleHTML(task.title);
+        const archiveHTML = task.status === 'DONE' ? getArchiveHTML() : '';
+        element.innerHTML = `
+          <span class="task-title" data-title="${task.title}">${titleHTML}</span>
+          <span class="actions">
+            <i class="task-edit-icon pointer material-icons">edit</i>
+            ${archiveHTML}
+            <span class="status-change-days new badge" data-badge-caption="">${task.daysSinceStatusChange}</span>
+          </span>`;
+        return element;
+      }
+
+      function getTitleHTML(title) {
+        return title.split(' ').map(word => getHTMLForWord(word)).join(' ');
+      }
+
+      function getHTMLForWord(word) {
+        let url = word;
+        if (OTHER_URL_BEGINNINGS.some(beginning => word.startsWith(beginning))) {
+          url = HTTP + word;
+        }
+        if (HTTP_URL_BEGINNINGS.some(beginning => url.startsWith(beginning))) {
+          // Create an anchor tag for things that appear to be links
+          return `<a href="${url}" target="_blank">${word}</a>`;
+        }
+        // It's not a link, so just return the same word
+        return word;
+      }
+
+      function getArchiveHTML() {
+        return '<span class="archive pointer new badge red" data-badge-caption="Archive" onclick="archive(event)"></span>'
+      }
+
+      function getTaskFromElement(element) {
+        return {
+          id: element.dataset.id,
+          title: getTitleFromTaskElement(element),
+          status: element.dataset.status,
+        };
+      }
+
+      function getTitleFromTaskElement(element) {
+        return element.querySelector('span.task-title').dataset.title;
+      }
+
+      function prependTaskToStatusContainer(task) {
+        const containerForStatus = document.getElementById(`${task.status}-container`);
+        const taskElement = createTaskElement(task);
+        containerForStatus.insertBefore(taskElement, containerForStatus.firstElementChild);
+      }
+
+      function getStatusFromString(str) {
+        return str.split('-')[0];
+      }
+
+      function htmlToElement(html) {
+        const template = document.createElement('template');
+        html = html.trim(); // Never return a text node of whitespace as the result
+        template.innerHTML = html;
+        return template.content.firstChild;
+      }
+
+      function saveTask(task, optSuccessHandler) {
+        google.script.run.withSuccessHandler(optSuccessHandler ? optSuccessHandler : ()=>{}).withFailureHandler(()=>{
+           M.toast({
+             html: 'Error: failed to save task! Please refresh and try again.',
+             classes: 'red',
+             displayLength: 10000,  // 10s
+             });
+        }).saveTask(task);
+      }
+
+      /** Initial setup **/
+      function initialTaskSetup(tasks) {
+        for (let task of tasks) {
+          prependTaskToStatusContainer(task);
+        }
+        document.querySelector('.task-loading').classList.add('hide');
+        document.querySelector('.trello-dupe-container').classList.remove('hide');
+      }
+      google.script.run.withSuccessHandler(initialTaskSetup).getTasks();
+
+      /** Set up drag-and-drop **/
+      const itemContainers = document.querySelectorAll('.drag-event-container');
+      for (container of itemContainers) {
+        new Sortable(container, {
+          group: 'shared', // set both lists to same group
+          animation: 150,
+          onAdd: moveTask,
+        });
+      }
+
+      /** Handle adding new tasks **/
+      function addNewTaskToSection(event) {
+        const status = getStatusFromString(event.target.id);
+        const task = {
+          id: crypto.randomUUID(),
+          title: event.target.value,
+          status, 
+          daysSinceStatusChange: 0,
+        };
+        prependTaskToStatusContainer(task);
+        event.target.value = '';
+        saveTask(task);
+      }
+
+      const newTaskInputs = document.querySelectorAll('.new-task-input');
+      for (let input of newTaskInputs) {
+        input.addEventListener('change', addNewTaskToSection);
+      }
+
+      /** Handle moving tasks between sections **/
+      function moveTask(event) {
+        const oldStatus = event.item.dataset.status;
+        const newStatus = getStatusFromString(event.to.id);
+        if (oldStatus === newStatus) {
+          return;  // Nothing to do
+        }
+        event.item.dataset.status = newStatus;
+        const statusChangeDaysElement = event.item.querySelector('.status-change-days');
+        if (newStatus === 'DONE') {
+          // Archive element must be inserted *before* the status change days element for the material library's "badge"
+          // float property to work correctly
+          statusChangeDaysElement.insertAdjacentElement('beforebegin', htmlToElement(getArchiveHTML()));
+        }
+        if (oldStatus === 'DONE') {
+          event.item.querySelector('.archive').remove();
+        }
+
+        statusChangeDaysElement.innerHTML = '0';
+
+        const task = getTaskFromElement(event.item);
+        saveTask(task);
+      }
+
+      /** Handle editing the title **/
+      function editTitle(event) {
+        if (!event.target.classList.contains('task-edit-icon')) {
+          // Only edit if the edit icon was clicked
+          return;
+        }
+        const taskElement = event.target.parentElement.parentElement;
+        if (elementIsAlreadyInEditMode(taskElement)) {
+          return;
+        }
+        const currentTitle = getTitleFromTaskElement(taskElement);
+        const inputId = `input-${taskElement.dataset.id}`;
+        const editHtmlString = `
+          <div class="input-field">
+            <input id="${inputId}" 
+                   data-original-title="${currentTitle}"
+                   placeholder="New title" 
+                   value="${currentTitle}" 
+                   type="text" 
+                   onchange="updateTitle(event)" 
+                   onblur="revertEdit(event)">
+            <label for="${inputId}">Edit title</label>
+          </div>`;
+        setTaskTitleHTMLToString(taskElement, editHtmlString);
+        taskElement.querySelector(`input#${inputId}`).focus();
+      }
+
+      function elementIsAlreadyInEditMode(element) {
+        // Check to see if there is an input element present
+        return !!element.querySelector('input');
+      }
+
+      function revertEdit(event) {
+        if (event.target.dataset.originalTitle !== event.target.value) {
+          // Allow the onchange method to take precedence if the values are different
+          return;
+        }
+        const taskElement = event.target.parentElement.parentElement.parentElement;
+        updateTitleHTMLElement(taskElement, event.target.dataset.originalTitle);
+      }
+
+      function updateTitle(event) {
+        const taskElement = event.target.parentElement.parentElement.parentElement;
+        const newTitle = event.target.value;
+        updateTitleHTMLElement(taskElement, newTitle);
+        const task = getTaskFromElement(taskElement);
+        saveTask(task);
+      }
+
+      function updateTitleHTMLElement(taskElement, title) {
+        const titleElement = taskElement.querySelector('span.task-title');
+        titleElement.dataset.title = title;
+        setTaskTitleHTMLToString(taskElement, getTitleHTML(title));
+      }
+
+      function setTaskTitleHTMLToString(taskElement, htmlString) {
+        taskElement.querySelector('span.task-title').innerHTML = htmlString;
+      }
+
+      for (let container of itemContainers) {
+        container.addEventListener('click', editTitle);
+      }
+
+      /** Handle archive **/
+      function archive(event) {
+        archiveSingleElement(event.target.parentElement.parentElement);
+      }
+      function archiveSingleElement(taskElement) {
+        taskElement.dataset.status = 'ARCHIVED';
+        const task = getTaskFromElement(taskElement);
+        saveTask(task, () => taskElement.remove());
+      }
+
+      /** Handle archive all **/
+      function archiveAllInDone() {
+        const taskElementsInDone = document.querySelectorAll('#DONE-container .task');
+        for (let taskElement of taskElementsInDone) {
+          archiveSingleElement(taskElement);
+        }
+      }
+      document.getElementById('archive-all').addEventListener('click', archiveAllInDone);
+    </script>
+  </body>
+</html>
